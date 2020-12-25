@@ -5,6 +5,9 @@ config = Config()
 game = AutoTrack(config)
 
 # 创建一个地图，传入大小、样式
-game.mapInit(config.x,config.y,config.block,config.entity,config.destination,config.track,config.obstacle)
-game.mapping()
+game.mapping(config.x,config.y)
 game.printMap()
+game.obstacle((2,10))
+print("-------------"*9)
+game.printMap()
+print("-------------"*9)
