@@ -3,8 +3,12 @@ class Config(object):
     x = 16
     y = 16
     # 交叉点样式
-    block = "▪ "
-    entity = "♢"
-    destination = "☟"
-    track = "○"
-    obstacle = "●"
+    block = "  "
+    start = "♢ "
+    end = "♡ "
+    track = "T "
+    obstacle = "x "
+    left = "←"
+    right = "→"
+    up = "↑"
+    down = "↓"
