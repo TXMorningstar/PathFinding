@@ -18,6 +18,17 @@
 ---
 
 # 说明书：
+**安装**
+>Autotrack模块的核心是modules文件夹里的autotrack.py  
+>把autotrack.py下载到你的程序目录里，然后在你的脚本中使用`from autotrack import *`就可以使用它了  
+>导入后，你需要这样做：
+>>创建一个设置类用于存放一些属性，参考config.py  
+>>为设置类创建实例对象，例`a = Config()`
+>>创建一个实例对象，将刚才你创建的设置类传进去，例`b = Autotrack(a)`  
+>随后，使用Autotrack内的方法进行寻路  
+
+>如果实在看不懂的话就参考一下main.py里的示范
+
 
 **生成地形**
 >`map(x,y)`  
