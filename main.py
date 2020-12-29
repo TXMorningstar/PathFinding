@@ -12,7 +12,8 @@ printer = ShowMap(config)
 # 创建一个地图，传入大小、样式
 track.map(config.x,config.y)
 track.obstacle((1,1))
-track.target((0,0),(1,1))
+track.target((0,0),(10,10))
+track.test((0,0))
 
 # a = track.getMap()
 # print("----------------\n"*20)
