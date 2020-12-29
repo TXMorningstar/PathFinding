@@ -200,11 +200,3 @@ class Autotrack(object):
         # 记录完成，接下来可以输出了
         trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
         return trace
-
-
-
-
-
-class ShowMap(object):
-    def __init__(self,config):
-        self.__config = config
