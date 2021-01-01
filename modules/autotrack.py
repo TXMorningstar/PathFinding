@@ -110,7 +110,7 @@ class Autotrack(object):
 
         #开始寻路
         minFpos = self.track()
-        for i in range(len(self._map)+3):
+        for i in range(self._x * self._y):
             minFpos = self.track(minFpos)
             if type(minFpos) == list:
                 return minFpos
