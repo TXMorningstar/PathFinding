@@ -86,7 +86,7 @@ class Autotrack(object):
                 print(self._map[y][x],end=" ")
             print()
 
-            
+
     '''
     与寻路相关的方法
     ----------------------------------------------------------------------------
@@ -109,7 +109,11 @@ class Autotrack(object):
         self.__open.append(start)
 
         #开始寻路
-        return self.track()
+        minFpos = self.track()
+        for i in range(len(self._map)+3):
+            minFpos = self.track(minFpos)
+            if type(minFpos) == list:
+                return minFpos
 
     # 计算F G H的值
     def attr(self,pos,father):
@@ -187,7 +191,7 @@ class Autotrack(object):
         self.__close.append(minFpos) #然后把它加入到close列表中，以后不再判断
 
         # 继续迭代，检查下一个节点
-        return self.track(minFpos)
+        return minFpos
 
     # 扫描一个点，然后返回这个点内部的数据
     def scan(self,x,y):
