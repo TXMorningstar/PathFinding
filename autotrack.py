@@ -91,6 +91,11 @@ class AStarTrack(object):
     寻路完成后，返回前进的道路的每一步的坐标(turple)和总步数
     使用printTrack方法可以打印带有路径的地图
     '''
+    def moveable(self,start,step):
+        pass
+
+
+
     # 设定起点和终点
     #传入turple作为起始、结束坐标
     def target(self,start,end):
