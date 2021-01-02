@@ -2,7 +2,7 @@
 主程序范例
 '''
 
-from modules.autotrack import *
+from autotrack import *
 
 track = AStarTrack(16,16) #实例化AStarTrack类
 # track = AStarTrack(16,16,"raw")
