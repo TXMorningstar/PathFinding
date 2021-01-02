@@ -163,16 +163,14 @@ class Autotrack(object):
 
         # 比对节点中F值最小的一个，这一个节点最有希望成为最短路径中的一个节点
         # 不过在开始比对之前还有一件事要做
-        if len(self.__open) == 0:
+        if len(self.__open) == 0: #如果open列表里没有新的坐标了，说明无路可走了
             print("No matched way")
             return "fail"
-        # 开始比对
-        comp = {} #comp会存放所有节点对应的F值
-        for i in range(len(self.__open)):
-            f = self._map[self.__open[i][0]][self.__open[i][1]][0][0] #找到F的值
-            comp[f] = self.__open[i] #将坐标放进comp，格式是f:坐标
-        minFpos = comp[min(comp)] #min(comp)通过字典找到了最低的f，然后以f作为key找到坐标，就算f有相同的也不影响
 
+        # 通过比对寻找子节点
+        son = self.compare()
+
+        # 现在可以打印地图了
         # print("-----------------tracking---------------------")
         if self.__print == "raw":
             self.printRawMap()
@@ -182,17 +180,34 @@ class Autotrack(object):
             print("------------------------------------------------------------")
 
         # 将节点从open中移至close
-        self.__open.remove(minFpos) #把这个找到的坐标从open里移出去
-        self.__close.append(minFpos) #然后把它加入到close列表中，以后不再判断
+        self.__open.remove(son) #把这个找到的坐标从open里移出去
+        self.__close.append(son) #然后把它加入到close列表中，以后不再判断
 
         # 继续迭代，检查下一个节点
-        return minFpos
+        return son
 
     # 扫描一个点，然后返回这个点内部的数据
     def scan(self,x,y):
         # 检查一下有没有超出边界，是不是障碍，如果是就不管了
         if x >= 0 and y >= 0 and x < self._x and y < self._y and self._map[x][y] != "b":
             return self._map[x][y]
+
+    def compare(self):
+        # 开始比对
+        # comp会存放所有节点对应的F值，comp只是一个缓冲区，真正记录坐标的还是map、open和close
+        # comp不必是一个字典，如果在循环内通过判断语句只把最低F值的坐标推进去的话也能达到一样的效果
+        comp = self.__open[0] #首先将第一个要比对的坐标放入comp完成初始化
+        for i in range(len(self.__open)):
+            f = self._map[self.__open[i][0]][self.__open[i][1]][0][0] #找到F的值
+            g = self._map[self.__open[i][0]][self.__open[i][1]][0][1] #找到G的值
+            if f <= self._map[comp[0]][comp[1]][0][0]:
+                if f == self._map[comp[0]][comp[1]][0][0]:
+                    if g < self._map[comp[0]][comp[1]][0][1]:
+                        comp = self.__open[i] #将坐标放进comp，格式是f:坐标
+                else:
+                    comp = self.__open[i] #将坐标放进comp，格式是f:坐标
+        # comp中存储的即为最优节点解
+        return comp
 
     # 寻路到终点后，通过父坐标迭代返回并找到完整路径
     def trace(self,father):
@@ -206,3 +221,7 @@ class Autotrack(object):
         # 记录完成，接下来可以输出了
         self._trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
         return self._trace
+
+class Spd_First_Track(Autotrack):
+    def comp(self):
+        
