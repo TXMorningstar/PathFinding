@@ -28,7 +28,7 @@ Autotrack模块的核心是modules文件夹里的autotrack.py
 >`"raw"`把寻路中每一个节点内的详细数据都打印出来方便查看，格式为`(F,G,H),(父节点x,父节点y)`  
 >例：`a = AStarTrack(16,16,"map")`
 
-随后，你利用AStarTrack类的方法进行寻路  
+随后，利用AStarTrack类的方法进行寻路  
 如果实在看不懂的话就参考一下main.py里的示范
 
 **放置障碍**  
