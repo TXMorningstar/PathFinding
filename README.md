@@ -21,13 +21,14 @@
 Autotrack模块的核心是modules文件夹里的autotrack.py  
 把autotrack.py下载到你的程序目录里，然后在你的脚本中使用`from autotrack import *`  
 导入后，你需要为它创建一个实例对象，然后传入地图的长和宽  
-例：`a = Autotrack(16,16) #创建一个16x16的地图用于寻路`  
+例：`a = AStarTrack(16,16) #创建一个16x16的地图用于寻路`  
+或：`a = BestFirstTrack(16,16) #这个类的寻路速度更快一些，但精准度不如AStarTrack`
 >如果你需要在cmd窗口调试它，可以再向其中传入一个字符串  
 >`"map"`把寻路的每一步都以一个便于阅读的方式打印到cmd窗口上）  
 >`"raw"`把寻路中每一个节点内的详细数据都打印出来方便查看，格式为`(F,G,H),(父节点x,父节点y)`  
->例：`a = Autotrack(16,16,"map")`
+>例：`a = AStarTrack(16,16,"map")`
 
-随后，你利用Autotrack类的方法进行寻路  
+随后，你利用AStarTrack类的方法进行寻路  
 如果实在看不懂的话就参考一下main.py里的示范
 
 **放置障碍**  
