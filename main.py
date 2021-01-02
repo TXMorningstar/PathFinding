@@ -4,7 +4,7 @@
 
 from autotrack import *
 
-track = AStarTrack(16,16,"map") #实例化AStarTrack类
+track = BestFirstTrack(16,16,"map") #实例化AStarTrack类
 # track = AStarTrack(16,16,"raw")
 # track = AStarTrack(16,16)
 # track = BestFirstTrack(16,16."map")

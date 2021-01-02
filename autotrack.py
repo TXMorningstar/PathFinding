@@ -117,6 +117,8 @@ class AStarTrack(object):
 
         #开始寻路
         self.map = self._map #初始化地图
+        self._open.clear()
+        self._close.clear()
         minFpos = self.track()
         for i in range(self._x * self._y):
             minFpos = self.track(minFpos)
@@ -202,7 +204,7 @@ class AStarTrack(object):
     # 扫描一个点，然后返回这个点内部的数据
     def scan(self,x,y):
         # 检查一下有没有超出边界，是不是障碍，如果是就不管了
-        if x >= 0 and y >= 0 and x < self._x and y < self._y and self.map[x][y] != "b":
+        if x >= 0 and y >= 0 and x < self._x and y < self._y and self.map[x][y] != "o":
             return self.map[x][y]
 
     def compare(self):
@@ -239,16 +241,6 @@ class AStarTrack(object):
 
 # 这个类使用的是更新前的算法，需要遍历的路径更少，也就是寻路更快，但寻路的结果不一定精准
 class BestFirstTrack(AStarTrack):
-
-    # 初始化类
-    def __init__(self,x,y,print=None):
-        self._x = x
-        self._y = y
-        self._print = print
-        self._open = []
-        self._close = []
-        self._trace = []
-        self.map = [[0 for i in range(y)] for i in range(x)]
 
     def compare(self):
         # 开始比对
