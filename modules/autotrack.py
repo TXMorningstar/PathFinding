@@ -1,8 +1,3 @@
-# 受到python本身的限制，迭代最多进行1000次，意味着地图不能做的过大
-# 如果要使用更大的二维坐标进行计算，应修改默认的最大迭代上限
-# import sys
-# sys.setrecursionlimit(最大迭代上限)
-
 class Autotrack(object):
 
     # 初始化类
@@ -48,7 +43,7 @@ class Autotrack(object):
                     print("☑ ",end=" ")
                 # 如果节点在close列表中
                 elif (y,x) in self.__close:
-                    print("☒ ",end=" ")
+                    print("  ",end=" ")
                 # 如果节点是障碍
                 elif self._map[y][x] == "o":
                     print("■",end=" ")
@@ -69,7 +64,7 @@ class Autotrack(object):
                     print("★",end=" ")
                 # 如果节点为路径之一
                 elif (y,x) in self._trace:
-                    print("  ",end=" ")
+                    print("• ",end=" ")
                 # 如果节点是障碍
                 elif self._map[y][x] == "o":
                     print("■",end=" ")
@@ -141,14 +136,6 @@ class Autotrack(object):
     # 寻路
     # father代表父节点，子节点是由父节点衍生出的节点，父节点就是上一个被检查的节点
     def track(self,father=None):
-        # print("-----------------tracking---------------------")
-        if self.__print == "raw":
-            self.printRawMap()
-            print("------------------------------------------------------------")
-        if self.__print == "map":
-            self.printMap()
-            print("------------------------------------------------------------")
-
         # 取出节点
         # 首次运行时的初始化（如果没有父节点，说明这个节点是初次运行）
         if father == None:
@@ -185,6 +172,14 @@ class Autotrack(object):
             f = self._map[self.__open[i][0]][self.__open[i][1]][0][0] #找到F的值
             comp[f] = self.__open[i] #将坐标放进comp，格式是f:坐标
         minFpos = comp[min(comp)] #min(comp)通过字典找到了最低的f，然后以f作为key找到坐标，就算f有相同的也不影响
+
+        # print("-----------------tracking---------------------")
+        if self.__print == "raw":
+            self.printRawMap()
+            print("------------------------------------------------------------")
+        if self.__print == "map":
+            self.printMap()
+            print("------------------------------------------------------------")
 
         # 将节点从open中移至close
         self.__open.remove(minFpos) #把这个找到的坐标从open里移出去
