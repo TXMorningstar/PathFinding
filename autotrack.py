@@ -4,11 +4,17 @@ class AStarTrack(object):
     def __init__(self,x,y,print=None):
         self._x = x
         self._y = y
-        self._print = print
-        self._open = []
-        self._close = []
-        self._trace = []
-        self._map = [[0 for i in range(y)] for i in range(x)]
+        self._print = print #print用于判断是否需要打印地图至cmd
+
+        self._open = [] #open列表会记录所有被扫描过的点的坐标，这些坐标会被优先处理
+        self._close = [] #close列表会记录所有已经计算过的点的坐标，这些坐标不会再被计算
+        self._trace = [] #这个列表会在寻路完成后用于记录寻路结果
+
+        # self.map与self._map的区别:
+        # self.map是存储了地图大小以及障碍物信息的地图
+        # self._map是用来计算的地图，计算后会重新初始化为self.map
+        self.map = [[0 for i in range(y)] for i in range(x)]
+        self._map = self.map
 
     '''
     地图相关的方法
@@ -23,10 +29,11 @@ class AStarTrack(object):
     # 传入一个turple作为坐标，将列表的对应坐标修改为障碍
     def obstacle(self,pos):
         self._map[pos[0]][pos[-1]] = "o"
+        self.map = self._map
 
     # 返回地图的二维数组
     def getMap(self):
-        return self._map
+        return self.map
 
     # 以美观的方式打印地图
     def printMap(self):
@@ -45,7 +52,7 @@ class AStarTrack(object):
                 elif (y,x) in self._close:
                     print("  ",end=" ")
                 # 如果节点是障碍
-                elif self._map[y][x] == "o":
+                elif self.map[y][x] == "o":
                     print("■",end=" ")
                 # 如果节点内数据为0
                 else:
@@ -66,7 +73,7 @@ class AStarTrack(object):
                 elif (y,x) in self._trace:
                     print("• ",end=" ")
                 # 如果节点是障碍
-                elif self._map[y][x] == "o":
+                elif self.map[y][x] == "o":
                     print("■",end=" ")
                 # 如果节点内数据为0
                 else:
@@ -78,7 +85,7 @@ class AStarTrack(object):
     def printRawMap(self):
         for x in range(self._y):
             for y in range(self._x):
-                print(self._map[y][x],end=" ")
+                print(self.map[y][x],end=" ")
             print()
 
 
@@ -103,12 +110,13 @@ class AStarTrack(object):
         self._start = start
         self._end = end
         # 向地图中存放每一格的信息
-        self._map[start[0]][start[-1]] = (self.attr(start,None),(start[0],start[1]))
-        self._map[end[0]][end[-1]] = "e"
+        self.map[start[0]][start[-1]] = (self.attr(start,None),(start[0],start[1]))
+        self.map[end[0]][end[-1]] = "e"
         # 把开始坐标放入open中以便寻路
         self._open.append(start)
 
         #开始寻路
+        self.map = self._map #初始化地图
         minFpos = self.track()
         for i in range(self._x * self._y):
             minFpos = self.track(minFpos)
@@ -127,7 +135,7 @@ class AStarTrack(object):
         if pos == self._start:
             g = 0
         else:
-            g = self._map[father[0]][father[1]][0][1] + 1
+            g = self.map[father[0]][father[1]][0][1] + 1
 
         # H值计算 —— 终点的预估距离
         h = abs(pos[0]-self._end[0]) + abs(pos[1]-self._end[1])
@@ -164,7 +172,7 @@ class AStarTrack(object):
             #   现在还不是很清楚open列表是否需要检查，暂定为需要检查（跳过open列表可以减少部分计算量
             elif scanpt == 0 and scanpt not in self._close:
                 self._open.append((x+i[0],y+i[1])) #将节点信息放入open列表中
-                self._map[x+i[0]][y+i[1]] = (self.attr((x+i[0],y+i[1]),father),(father)) #向地图内添加F G H与父坐标的信息
+                self.map[x+i[0]][y+i[1]] = (self.attr((x+i[0],y+i[1]),father),(father)) #向地图内添加F G H与父坐标的信息
 
         # 比对节点中F值最小的一个，这一个节点最有希望成为最短路径中的一个节点
         # 不过在开始比对之前还有一件事要做
@@ -194,8 +202,8 @@ class AStarTrack(object):
     # 扫描一个点，然后返回这个点内部的数据
     def scan(self,x,y):
         # 检查一下有没有超出边界，是不是障碍，如果是就不管了
-        if x >= 0 and y >= 0 and x < self._x and y < self._y and self._map[x][y] != "b":
-            return self._map[x][y]
+        if x >= 0 and y >= 0 and x < self._x and y < self._y and self.map[x][y] != "b":
+            return self.map[x][y]
 
     def compare(self):
         # 开始比对
@@ -203,11 +211,11 @@ class AStarTrack(object):
         # comp不必是一个字典，如果在循环内通过判断语句只把最低F值的坐标推进去的话也能达到一样的效果
         comp = self._open[0] #首先将第一个要比对的坐标放入comp完成初始化
         for i in range(len(self._open)):
-            f = self._map[self._open[i][0]][self._open[i][1]][0][0] #找到F的值
-            g = self._map[self._open[i][0]][self._open[i][1]][0][1] #找到G的值
-            if f <= self._map[comp[0]][comp[1]][0][0]:
-                if f == self._map[comp[0]][comp[1]][0][0]:
-                    if g < self._map[comp[0]][comp[1]][0][1]:
+            f = self.map[self._open[i][0]][self._open[i][1]][0][0] #找到F的值
+            g = self.map[self._open[i][0]][self._open[i][1]][0][1] #找到G的值
+            if f <= self.map[comp[0]][comp[1]][0][0]:
+                if f == self.map[comp[0]][comp[1]][0][0]:
+                    if g < self.map[comp[0]][comp[1]][0][1]:
                         comp = self._open[i] #将坐标放进comp，格式是f:坐标
                 else:
                     comp = self._open[i] #将坐标放进comp，格式是f:坐标
@@ -219,8 +227,8 @@ class AStarTrack(object):
         self._trace = [self._end,father] #终点的坐标一定是移动的最后一步，所以首先放入列表中；父坐标不会在循环内被输入列表，因此同样放入列表
         # 循环F次
         pos = father #正在检查的坐标，每检查一个新坐标就会更新一次
-        for i in range(self._map[father[0]][father[1]][0][1]):
-            pos = self._map[pos[0]][pos[1]][1] #找到父节点，随后将下一个子节点更新为这个节点
+        for i in range(self.map[father[0]][father[1]][0][1]):
+            pos = self.map[pos[0]][pos[1]][1] #找到父节点，随后将下一个子节点更新为这个节点
             self._trace.append(pos) #把刚刚找到的父节点记录进trace里
 
         # 记录完成，接下来可以输出了
@@ -240,12 +248,12 @@ class BestFirstTrack(AStarTrack):
         self._open = []
         self._close = []
         self._trace = []
-        self._map = [[0 for i in range(y)] for i in range(x)]
+        self.map = [[0 for i in range(y)] for i in range(x)]
 
     def compare(self):
         # 开始比对
         comp = {} #comp会存放所有节点对应的F值
         for i in range(len(self._open)):
-            f = self._map[self._open[i][0]][self._open[i][1]][0][0] #找到F的值
+            f = self.map[self._open[i][0]][self._open[i][1]][0][0] #找到F的值
             comp[f] = self._open[i] #将坐标放进comp，格式是f:坐标
         return comp[min(comp)] #min(comp)通过字典找到了最低的f，然后以f作为key找到坐标，就算f有相同的也不影响
