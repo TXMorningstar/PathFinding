@@ -222,6 +222,9 @@ class AStarTrack(object):
         self._trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
         return self._trace
 
+
+
+# 这个类使用的是更新前的算法，需要遍历的路径更少，也就是寻路更快，但寻路的结果不一定精准
 class BestFirstTrack(AStarTrack):
 
     # 初始化类
