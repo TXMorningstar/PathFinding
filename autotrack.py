@@ -157,8 +157,6 @@ class AStarTrack(object):
         if self._trace:
             return self._trace
 
-
-
         # 取出节点
         # 首次运行时的初始化（如果没有父节点，说明这个节点是初次运行）
         if father == None:
@@ -175,11 +173,6 @@ class AStarTrack(object):
         for i in (0,-1),(-1,0),(0,1),(1,0):
             # 检查一下有没有超出边界防止出现ListOutOfRange错误
             if x+i[0] >= 0 and y+i[1] >= 0 and x < self._x and y < self._y:
-                print("----------------------------------------")
-                print(x,y)
-                print(x+i[0],y+i[1])
-                self.printRawMap()
-                print(self.map[x+i[0]][y+i[1]])
                 scanpt = self.map[x+i[0]][y+i[1]] #scanpt会存储被扫描的点的数据
 
                 # 被检查的点是否为路径终点
@@ -240,7 +233,7 @@ class AStarTrack(object):
 
     # 寻路到终点后，通过父坐标迭代返回并找到完整路径
     def trace(self,father):
-        self._trace = [self._end,father] #终点的坐标一定是移动的最后一步，所以首先放入列表中；父坐标不会在循环内被输入列表，因此同样放入列表
+        self._trace = [father,self._end] #终点的坐标一定是移动的最后一步，所以首先放入列表中；父坐标不会在循环内被输入列表，因此同样放入列表
         # 循环F次
         pos = father #正在检查的坐标，每检查一个新坐标就会更新一次
 
@@ -249,7 +242,6 @@ class AStarTrack(object):
             return [self._end]
         else:
             for i in range(self.map[father[0]][father[1]][0][1]):
-                print("for %s in range" %i)
                 pos = self.map[pos[0]][pos[1]][1] #找到父节点，随后将下一个子节点更新为这个节点
                 self._trace.append(pos) #把刚刚找到的父节点记录进trace里
 
