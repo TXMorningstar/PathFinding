@@ -119,6 +119,7 @@ class AStarTrack(object):
         self.map = self._map #初始化地图
         self._open.clear()
         self._close.clear()
+        self._trace.clear()
         minFpos = self.track()
         for i in range(self._x * self._y):
             minFpos = self.track(minFpos)
@@ -148,9 +149,16 @@ class AStarTrack(object):
         # 返回F G H的值
         return (f,g,h)
 
+
     # 寻路
     # father代表父节点，子节点是由父节点衍生出的节点，父节点就是上一个被检查的节点
     def track(self,father=None):
+        # 首先处理trace数据，如果trace不为空则证明寻路已完成。此时只需将trace数据向上抛回即可
+        if self._trace:
+            return self._trace
+
+
+
         # 取出节点
         # 首次运行时的初始化（如果没有父节点，说明这个节点是初次运行）
         if father == None:
@@ -165,16 +173,24 @@ class AStarTrack(object):
         # 扫描 “四个” 周边方块的信息，随后向坐标内保存F G H的值
         # 四个元组代表扫描的方向：上、左、下、右
         for i in (0,-1),(-1,0),(0,1),(1,0):
-            scanpt = self.scan(x+i[0],y+i[1]) #scanpt会存储被扫描的点的数据
-            # 被检查的点是否为路径终点
-            if scanpt == "e":
-                return self.trace(father)
-            # 判断:
-            #   节点有无障碍、是否在close列表中
-            #   现在还不是很清楚open列表是否需要检查，暂定为需要检查（跳过open列表可以减少部分计算量
-            elif scanpt == 0 and scanpt not in self._close:
-                self._open.append((x+i[0],y+i[1])) #将节点信息放入open列表中
-                self.map[x+i[0]][y+i[1]] = (self.attr((x+i[0],y+i[1]),father),(father)) #向地图内添加F G H与父坐标的信息
+            # 检查一下有没有超出边界防止出现ListOutOfRange错误
+            if x+i[0] >= 0 and y+i[1] >= 0 and x < self._x and y < self._y:
+                print("----------------------------------------")
+                print(x,y)
+                print(x+i[0],y+i[1])
+                self.printRawMap()
+                print(self.map[x+i[0]][y+i[1]])
+                scanpt = self.map[x+i[0]][y+i[1]] #scanpt会存储被扫描的点的数据
+
+                # 被检查的点是否为路径终点
+                if scanpt == "e":
+                    return self.trace(father)
+                # 判断:
+                #   节点有无障碍、是否在close列表中
+                #   现在还不是很清楚open列表是否需要检查，暂定为需要检查（跳过open列表可以减少部分计算量
+                elif scanpt == 0 and scanpt not in self._close:
+                    self._open.append((x+i[0],y+i[1])) #将节点信息放入open列表中
+                    self.map[x+i[0]][y+i[1]] = (self.attr((x+i[0],y+i[1]),father),(father)) #向地图内添加F G H与父坐标的信息
 
         # 比对节点中F值最小的一个，这一个节点最有希望成为最短路径中的一个节点
         # 不过在开始比对之前还有一件事要做
@@ -201,12 +217,7 @@ class AStarTrack(object):
         # 继续迭代，检查下一个节点
         return son
 
-    # 扫描一个点，然后返回这个点内部的数据
-    def scan(self,x,y):
-        # 检查一下有没有超出边界，是不是障碍，如果是就不管了
-        if x >= 0 and y >= 0 and x < self._x and y < self._y and self.map[x][y] != "o":
-            return self.map[x][y]
-
+    # 这个方法用于比对所有open中的节点并找出期望最优路径
     def compare(self):
         # 开始比对
         # comp会存放所有节点对应的F值，comp只是一个缓冲区，真正记录坐标的还是map、open和close
@@ -215,7 +226,10 @@ class AStarTrack(object):
         for i in range(len(self._open)):
             f = self.map[self._open[i][0]][self._open[i][1]][0][0] #找到F的值
             g = self.map[self._open[i][0]][self._open[i][1]][0][1] #找到G的值
+            # 我们需要的最佳坐标，是F值最低的一个
             if f <= self.map[comp[0]][comp[1]][0][0]:
+                # 但是如果有多个F值相等的坐标，则需要选择其中G值最低的坐标
+                # H值无需计算，因为F值即为G与H之和，若G值相同，则H值毫无疑问也想通
                 if f == self.map[comp[0]][comp[1]][0][0]:
                     if g < self.map[comp[0]][comp[1]][0][1]:
                         comp = self._open[i] #将坐标放进comp，格式是f:坐标
@@ -229,13 +243,19 @@ class AStarTrack(object):
         self._trace = [self._end,father] #终点的坐标一定是移动的最后一步，所以首先放入列表中；父坐标不会在循环内被输入列表，因此同样放入列表
         # 循环F次
         pos = father #正在检查的坐标，每检查一个新坐标就会更新一次
-        for i in range(self.map[father[0]][father[1]][0][1]):
-            pos = self.map[pos[0]][pos[1]][1] #找到父节点，随后将下一个子节点更新为这个节点
-            self._trace.append(pos) #把刚刚找到的父节点记录进trace里
 
-        # 记录完成，接下来可以输出了
-        self._trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
-        return self._trace
+        # 如果路径过短会由于神秘力量报错，因此在循环前要进行判断
+        if self.map[father[0]][father[1]][0][1] == 0:
+            return [self._end]
+        else:
+            for i in range(self.map[father[0]][father[1]][0][1]):
+                print("for %s in range" %i)
+                pos = self.map[pos[0]][pos[1]][1] #找到父节点，随后将下一个子节点更新为这个节点
+                self._trace.append(pos) #把刚刚找到的父节点记录进trace里
+
+            # 记录完成，接下来可以输出了
+            self._trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
+            return self._trace
 
 
 
