@@ -1,3 +1,5 @@
+import copy
+
 class AStarTrack(object):
 
     # 初始化类
@@ -15,6 +17,8 @@ class AStarTrack(object):
         # self._map是用来计算的地图，计算后会重新初始化为self.map
         self.map = [[0 for i in range(y)] for i in range(x)]
         self._map = self.map
+        self._start = None
+        self._end = None
 
     '''
     地图相关的方法
@@ -98,14 +102,19 @@ class AStarTrack(object):
     寻路完成后，返回前进的道路的每一步的坐标(turple)和总步数
     使用printTrack方法可以打印带有路径的地图
     '''
-    def moveable(self,start,step):
-        pass
+    # 初始化地图
+    def mapReinit(self):
+        self.map = copy.deepcopy(self._map) #使用深拷贝复制地图用于计算
+        self._open.clear()
+        self._close.clear()
+        self._trace.clear()
+        self._start = None
+        self._end = None
 
-
-
-    # 设定起点和终点
-    #传入turple作为起始、结束坐标
+    # 设定起点和终点，然后开始寻路
+    # 传入turple作为起始、结束坐标
     def target(self,start,end):
+        self.mapReinit() #首先重新初始化
         # 将起始、结束坐标存入类属性中
         self._start = start
         self._end = end
@@ -116,10 +125,6 @@ class AStarTrack(object):
         self._open.append(start)
 
         #开始寻路
-        self.map = self._map #初始化地图
-        self._open.clear()
-        self._close.clear()
-        self._trace.clear()
         minFpos = self.track()
         for i in range(self._x * self._y):
             minFpos = self.track(minFpos)
@@ -172,7 +177,7 @@ class AStarTrack(object):
         # 四个元组代表扫描的方向：上、左、下、右
         for i in (0,-1),(-1,0),(0,1),(1,0):
             # 检查一下有没有超出边界防止出现ListOutOfRange错误
-            if x+i[0] >= 0 and y+i[1] >= 0 and x < self._x and y < self._y:
+            if x+i[0] >= 0 and y+i[1] >= 0 and x+i[0] < self._x and y+i[1] < self._y:
                 scanpt = self.map[x+i[0]][y+i[1]] #scanpt会存储被扫描的点的数据
 
                 # 被检查的点是否为路径终点
@@ -249,10 +254,60 @@ class AStarTrack(object):
             self._trace.reverse() #因为append记录的列表是从终点向起点走过去的，因此需要反向列表
             return self._trace
 
+    # 返回所有可移动的坐标
+    # 传入起点与步数进行计算
+    def moveable(self,start,step=None):
+        self.mapReinit() #重新初始化地图
+        print("====================================================")
+        self.printRawMap()
+        if step == None:
+            step = self._x * self._y #如果没有指定步数，则步数等于地图大小
+        self.map[start[0]][start[1]] = 1 #为起始坐标赋上G值
+        father = start #第一个父坐标必定为开始坐标
+        self._start = start #将起始坐标存入类属性中
+        self._open.append(start)
+
+        # 以开始坐标为起点开始搜索周围坐标并赋G值
+        for stage in range(self._x * self._y):
+            for i in (0,-1),(-1,0),(0,1),(1,0):
+                # 分析周围坐标信息，过滤掉障碍与边界
+                x = father[0] + i[0]
+                y = father[1] + i[1]
+                if x < self._x and x >= 0 and y < self._y and y >= 0:
+                    if self.map[x][y] != "o" and (x,y) not in self._open and (x,y) not in self._close:
+                        # 将检查的坐标放入open
+                        self._open.append((x,y))
+                        # 为正在检查的点赋G值,然后存入父坐标
+                        if self.map[father[0]][father[1]] + 1 < self.map[x][y] or self.map[x][y] == 0:
+                            self.map[x][y] = self.map[father[0]][father[1]] + 1
+
+                        if self._print == "map":
+                            self.printMap()
+                            print("---------------------------------------")
+                        elif self._print == "raw":
+                            self.printRawMap()
+                            print("---------------------------------------")
+
+            # 遍历一次open列表
+            for i in range(len(self._open)):
+                # 检查G值是否符合要求
+                if self.map[self._open[i][0]][self._open[i][1]] <= step:
+                    father = (self._open[i][0],self._open[i][1])
+                    self._close.append((self._open[i][0],self._open[i][1]))
+                    del(self._open[i])
+                    break
+                # 如果遍历到了头
+                if i+1 == len(self._open):
+                    self._close.extend(self._open)
+                    self._open.clear()
+                    return self._close
+
+        # 寻路完成，返回close列表即可
+        return self._close
 
 
 # 这个类使用的是更新前的算法，需要遍历的路径更少，也就是寻路更快，但寻路的结果不一定精准
-class BestFirstTrack(AStarTrack):
+class FPriorTrack(AStarTrack):
 
     def compare(self):
         # 开始比对
